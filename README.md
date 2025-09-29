@@ -78,6 +78,8 @@ elif modo == 1:
         _, salida = cv2.threshold(gris, 130, 255, cv2.THRESH_BINARY)
 ```
 
+<img alt="example1" src="/Ejemplos/example3-1.png">
+
 Para el modo 2 se aplica Sobel. Primero se suaviza la imagen y se eliminan altas frecuencias. Posteriormente, se calcula sober  tanto en horizontal como en vertical y se combinan los resultados para tener la imagen final. En este modo, esa será la salida que se va conseguirá.
 
 ```
@@ -89,6 +91,9 @@ elif modo == 2:
         sobel = cv2.convertScaleAbs(cv2.add(sobelx, sobely))
         salida = sobel
 ```
+
+<img alt="example1" src="/Ejemplos/example3-2.png">
+
 Una vez aplicados los conocimientos de la práctica 2, el modo 3 recuerda la última tarea de la primera práctica. En este modo, vemos uno de los resultados de pop art obtenidos. Para ello, se dividen los 3 canales para ir jugando con ellos, invirtiendo el valor de los canales r y g, mientras el b se deja tal como está.
 
 ```
@@ -104,6 +109,8 @@ elif modo == 3:
 
         salida = frame
 ```
+
+<img alt="example1" src="/Ejemplos/example3-3.png">
 
 Para no provocar problemas entre el cambio de modos o la finalización del programa, se recoge una vez el valor de la tecla pulsado y se va comparando en cada iteración del while. Si pulsamos ESC (27), detenemos todo. Si, en su lugar, pulsamos d, avanzaremos entre los diferentes modos de imagen. Por lo contrario, a nos hace volver hacia atrás. Se usa ord() para 'a' o 'd' porque es una función que transforma caracteres en valores numéricos (como el caso del 27). Cuando se avanza o retrocede, hacemos % 4 para que el modo nunca se salga de los valores establecidos. Solo debe ir entre 0 y 3, por lo que esto nos permite tener unos límites.
 
