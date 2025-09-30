@@ -66,6 +66,72 @@ Con todo hecho, solo queda mostrar la imagen con Canny, mostrar el número de p�
 
 <img alt="example1" src="/Ejemplos/example1.png">
 
+## Tarea 2
+
+Para la tarea 2 hemos reutilizado ciertas partes de la tarea 1 para el conteo de píxeles tanto en filas como en columnas. En este caso, partimos de la imagen resultante de Sobel combinada en X e Y:
+
+```
+# Gaussiana para suavizar la imagen original, eliminando altas frecuencias
+img = cv2.imread('mandril.jpg') 
+gris = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+ggris = cv2.GaussianBlur(gris, (3, 3), 0)
+
+# Calcula en ambas direcciones (horizontal y vertical)
+sobelx = cv2.Sobel(ggris, cv2.CV_64F, 1, 0)  # x
+sobely = cv2.Sobel(ggris, cv2.CV_64F, 0, 1)  # y
+# Combina ambos resultados
+sobel = cv2.add(sobelx, sobely)
+
+valor_umbral = 130
+
+_, imagenUmbralizada = cv2.threshold(cv2.convertScaleAbs(sobel), valor_umbral, 255, cv2.THRESH_BINARY)
+
+# Mostramos Sobel
+fig, (ax1, ax2, ax3)= plt.subplots(1, 3, figsize=(15, 4))
+ax1.set_axis_off()
+ax1.set_title("Sobel")
+ax1.imshow(imagenUmbralizada, cmap='gray')
+
+col_counts = cv2.reduce(imagenUmbralizada, 0, cv2.REDUCE_SUM, dtype=cv2.CV_32SC1)
+cols = col_counts / (255 * imagenUmbralizada.shape[1])
+cols = cols[0]
+
+row_counts = cv2.reduce(imagenUmbralizada, 1, cv2.REDUCE_SUM, dtype=cv2.CV_32SC1)
+row_counts = row_counts.reshape((len(row_counts)))
+rows = row_counts / (255 * imagenUmbralizada.shape[0])
+```
+
+Tras el conteo, procedemos a mostrar la primera de dos figuras distintas de matplotlib (también imitando el método de la Tarea 1). Esta figura, con 3 elementos distintos (ax1, ax2, ax3) contendrá la imagen resultante de Sobel y los gráficos de la cuenta de píxeles para las columnas y las filas.
+
+<img alt="example2_1" src="/Ejemplos/example2-1.png">
+
+Para el cálculo de las filas y columnas por encima del 90% usamos también el mismo método que en la tarea anterior.
+
+```
+max_cols_values = []
+max_cols_indexes = []
+for i in range(len(cols)):
+    if cols[i] >= 0.9*maxcol:
+        max_cols_values.append(float(cols[i]))
+        max_cols_indexes.append(i)
+
+max_rows_values = []
+max_rows_indexes = []
+for i in range(len(rows)):
+    if rows[i] >= 0.9*maxfil:
+        max_rows_values.append(float(rows[i]))
+        max_rows_indexes.append(i)
+```
+
+Finalmente, para la segunda figura, mostramos nuevamente el resultado de Sobel, pero con líneas de distintos colores resaltando las columnas (verde) y filas (azul) que superan los valores del 90% para maxcol (columnas) y maxfil (filas) junto con sus respectivas gráficas.
+
+<img alt="example2_2" src="/Ejemplos/example2-2.png">
+
+Como último punto, queda comentar la diferencia entre Canny y Sobel. Si observamos la respuesta de Canny en las filas (+90%) y la de Sobel, se ve la misma cantidad de filas que superan el 90% en la cuenta de píxeles, sin embbargo, en Canny se muestran más juntos los puntos, concentrados en los extremos, mientras que en Sobel, se encuentran repartidos más equitativamente en todo el espacio muestral de las filas.
+
+<img alt="example2_3" src="/Ejemplos/example2-3.png">
+<img alt="example2_4" src="/Ejemplos/example2-4.png">
+
 ## Tarea 3
 
 Como es necesario captar la imagen por medio de la webcam, se hará uso de cv2.VideoCapture(0). El propósito de estarea tarea es poder cambiar entre diferentes modos de procesamiento de imagen, recordando lo aprendido durante la práctica 1. Una vez captamos fotograma a fotograma, convertiremos la imagen a escala de grises para poder trabajar.
@@ -121,15 +187,73 @@ elif key == ord('d'):
         modo = (modo - 1) % 4
 ```
 
+## Tarea 4
 
+Para la tarea 4, hemos tenido la idea de seguir con la línea de 'My Little Piece of Privacy', que utiliza el procesamiento de imágenes para detectar posiciones y lo hemos aplicado a un caso común también conectado a la privacidad: el desenfoque de las caras cuando nos encontramos en algún tipo de videollamada o cuando hay algún procesamiento de vídeo y se quiere conservar la privacidad de las personas que no han accedido a que su imagen sea tomada.
 
+Empezamos con la implementación base, procesamos la entrada de la webcam y nos basamos del modelo que nos aporta OpenCV para la detección facial:
 
+```
+face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
+video_capture = cv2.VideoCapture(0)
+```
 
+Primeramente, nos aseguramos que se detectasen las caras y pudiesemos poner una elipse que añadiese sobre ellas. El proceso para convertir una elipse común en una elipse desenfocada fue un poco complejo, ya que hay que detectar el área de la cara, aplicar el desenfoque (Gaussian Blur), crear una máscara binaria con la elipse, transformar dicha máscara de un canal (blanco y negro) a tres canales (color) y utilizar la máscara para recortar el desenfoque en forma de elipse.
 
+```
+# Sacamos la región donde está la cara detectada
+roi = vid.copy()
 
+# Aplicamos Gaussian Blur
+blurred_roi = cv2.GaussianBlur(vid, (51, 51), 30)
 
+# Creamos elipse blanca sobre fondo negro para la máscara
+mask = np.zeros((vid.shape[0], vid.shape[1]), dtype=np.uint8)
+center = (x + (w//2), y + (h//2))
+cv2.ellipse(mask, center, (w//2, h//2), 0, 0, 360, 255, -1)
 
+# Hacemos máscara de 3 canales (de grises a color)
+mask3ch = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+mask_normalized = mask3ch.astype(float) / 255
+
+# Reemplazamos la región original por la nueva
+vid[:] = (1 - mask_normalized) * vid + mask_normalized * blurred_roi
+```
+
+Sin embargo, lo anterior es el primer paso. Para poder centrarnos en desenfocar solo a las personas que se encuentran en el fondo, hemos decidido combinar este desenfoque con la separación del fondo que vimos en clase: 
+
+```
+back_sub = cv2.createBackgroundSubtractorMOG2(detectShadows=True)
+```
+
+Para lograr el efecto que queremos, hemos utilizado la sustracción de fondo de OpenCV para dividir la entrada de vídeo entre 'background' y 'foreground', dándole 30 frames para que el algoritmo se calibre.
+
+```
+# Sacamos el fondo y nos quedamos con la 'Foreground mask'
+fg_mask = back_sub.apply(frame)
+if frame_count > 30:  # Wait for background model to learn
+    faces = detectar_caras(frame, fg_mask)
+```
+
+Con la llamada a la función detectar_caras(), le pasamos la detección del fondo y la usamos para comprobar qué caras se pueden considerar como parte del fondo y cuáles son las que estan en primer plano. Para detectar cuáles están en el fondo, tomamos una sub-región cerca del centro de la región detectada por el modelo como una posible cara y comprobamos si sus píxeles pertenecen o no al fondo. Con esto generamos un background_ratio que será el que usaremos para decidir si debemos o no desenfocar la cara.
+
+```
+for (x, y, w, h) in faces:
+    # Extraemos parte de la región de la cara detectada de fg_mask
+    x0 = max(0, x + w//4)
+    y0 = max(0, y + h//4)
+    x1 = min(fg_mask.shape[1], x + 3*w//4)
+    y1 = min(fg_mask.shape[0], y + 3*h//4)
+    face_region = fg_mask[y0:y1, x0:x1]
+    # Sacamos el ratio de píxeles de la cara que pertenecerían al fondo
+    background_ratio = np.sum(face_region == 0) / face_region.size
+    if face_region.size > 0 and background_ratio > 0.87:
+```
+
+El resultado deseado es que el desenfoque solo afecte a las personas en el fondo y que la(s) persona(s) en primer plano se mantengan sin desenfocar. La clave es que las personas en el fondo se mantengan estáticas para que se registren como fondo y que la(s) persona(s) en primer plano muestren algún movimiento. Sin embargo, los resultado son variables y no suficientemente consistentes para afirmar un funcionamiento óptimo.
+
+<img alt="example4" src="/Ejemplos/example4.png">
 
 
 ## Referencias
