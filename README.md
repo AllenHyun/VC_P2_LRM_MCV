@@ -3,6 +3,7 @@
 ## Autores
 
 Leslie Liu Romero Martín
+<br>
 María Cabrera Vérgez
 
 ## Tareas realizadas
@@ -15,7 +16,7 @@ Para la segunda práctica de la asignatura, se hará uso de OpenCV junto a algun
 
 3.  Proponer un demostrador que capture las imágenes de la cámara, y les permita exhibir lo aprendido en estas dos prácticas ante quienes no cursen la asignatura. Es por ello que además de poder mostrar la imagen original de la webcam, permita cambiar de modo, incluyendo al menos dos procesamientos diferentes como resultado de aplicar las funciones de OpenCV trabajadas hasta ahora.
 
-4. ras ver los vídeos My little piece of privacy, Messa di voce y Virtual air guitar proponer un demostrador reinterpretando la parte de procesamiento de la imagen, tomando como punto de partida alguna de dichas instalaciones.
+4. Tras ver los vídeos My little piece of privacy, Messa di voce y Virtual air guitar proponer un demostrador reinterpretando la parte de procesamiento de la imagen, tomando como punto de partida alguna de dichas instalaciones.
 
 ## Instalación
 
@@ -30,7 +31,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 ## Tareas
 
-## Tarea 1
+### Tarea 1
 
 Primero se debe leer la imagen que vamos a estar usando, mandril.jpg. Se convierte a escala de grises y se le aplica Canny, un detector de bordes. Los píxeles de lor bordes valen 255 y el resto 0.
 
@@ -66,7 +67,7 @@ Con todo hecho, solo queda mostrar la imagen con Canny, mostrar el número de p�
 
 <img alt="example1" src="/Ejemplos/example1.png">
 
-## Tarea 2
+### Tarea 2
 
 Para la tarea 2 hemos reutilizado ciertas partes de la tarea 1 para el conteo de píxeles tanto en filas como en columnas. En este caso, partimos de la imagen resultante de Sobel combinada en X e Y:
 
@@ -101,7 +102,7 @@ row_counts = row_counts.reshape((len(row_counts)))
 rows = row_counts / (255 * imagenUmbralizada.shape[0])
 ```
 
-Tras el conteo, procedemos a mostrar la primera de dos figuras distintas de matplotlib (también imitando el método de la Tarea 1). Esta figura, con 3 elementos distintos (ax1, ax2, ax3) contendrá la imagen resultante de Sobel y los gráficos de la cuenta de píxeles para las columnas y las filas.
+Tras el conteo, procedemos a mostrar la primera de dos figuras distintas de matplotlib (también imitando el método de la Tarea 1). Esta figura, con 3 elementos distintos, contendrá la imagen resultante de Sobel y los gráficos de la cuenta de píxeles para las columnas y las filas.
 
 <img alt="example2_1" src="/Ejemplos/example2-1.png">
 
@@ -127,12 +128,12 @@ Finalmente, para la segunda figura, mostramos nuevamente el resultado de Sobel, 
 
 <img alt="example2_2" src="/Ejemplos/example2-2.png">
 
-Como último punto, queda comentar la diferencia entre Canny y Sobel. Si observamos la respuesta de Canny en las filas (+90%) y la de Sobel, se ve la misma cantidad de filas que superan el 90% en la cuenta de píxeles, sin embbargo, en Canny se muestran más juntos los puntos, concentrados en los extremos, mientras que en Sobel, se encuentran repartidos más equitativamente en todo el espacio muestral de las filas.
+Como último punto, queda comentar la diferencia entre Canny y Sobel. Si observamos la respuesta de Canny en las filas (+90%) y la de Sobel, se ve la misma cantidad de filas que superan el 90% en la cuenta de píxeles, sin embargo, en Canny se muestran más juntos los puntos, concentrados en los extremos, mientras que en Sobel se encuentran repartidos más equitativamente en todo el espacio muestral de las filas.
 
 <img alt="example2_3" src="/Ejemplos/example2-3.png">
 <img alt="example2_4" src="/Ejemplos/example2-4.png">
 
-## Tarea 3
+### Tarea 3
 
 Como es necesario captar la imagen por medio de la webcam, se hará uso de cv2.VideoCapture(0). El propósito de estarea tarea es poder cambiar entre diferentes modos de procesamiento de imagen, recordando lo aprendido durante la práctica 1. Una vez captamos fotograma a fotograma, convertiremos la imagen a escala de grises para poder trabajar.
 
@@ -187,7 +188,7 @@ elif key == ord('d'):
         modo = (modo - 1) % 4
 ```
 
-## Tarea 4
+### Tarea 4
 
 Para la tarea 4, hemos tenido la idea de seguir con la línea de 'My Little Piece of Privacy', que utiliza el procesamiento de imágenes para detectar posiciones y lo hemos aplicado a un caso común también conectado a la privacidad: el desenfoque de las caras cuando nos encontramos en algún tipo de videollamada o cuando hay algún procesamiento de vídeo y se quiere conservar la privacidad de las personas que no han accedido a que su imagen sea tomada.
 
@@ -199,7 +200,7 @@ face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fro
 video_capture = cv2.VideoCapture(0)
 ```
 
-Primeramente, nos aseguramos que se detectasen las caras y pudiesemos poner una elipse que añadiese sobre ellas. El proceso para convertir una elipse común en una elipse desenfocada fue un poco complejo, ya que hay que detectar el área de la cara, aplicar el desenfoque (Gaussian Blur), crear una máscara binaria con la elipse, transformar dicha máscara de un canal (blanco y negro) a tres canales (color) y utilizar la máscara para recortar el desenfoque en forma de elipse.
+Primeramente, nos aseguramos de que se detecten las caras y que podamos poner una elipse que añada desenfoque sobre ellas. El proceso para convertir una elipse común en una elipse desenfocada fue un poco complejo, ya que hay que detectar el área de la cara, aplicar el desenfoque (Gaussian Blur), crear una máscara binaria con la elipse, transformar dicha máscara de un canal (blanco y negro) a tres canales (color) y utilizar la máscara para recortar el desenfoque en forma de elipse.
 
 ```
 # Sacamos la región donde está la cara detectada
@@ -232,7 +233,7 @@ Para lograr el efecto que queremos, hemos utilizado la sustracción de fondo de 
 ```
 # Sacamos el fondo y nos quedamos con la 'Foreground mask'
 fg_mask = back_sub.apply(frame)
-if frame_count > 30:  # Wait for background model to learn
+if frame_count > 30:  # Calibramos el modelo
     faces = detectar_caras(frame, fg_mask)
 ```
 
@@ -251,7 +252,7 @@ for (x, y, w, h) in faces:
     if face_region.size > 0 and background_ratio > 0.87:
 ```
 
-El resultado deseado es que el desenfoque solo afecte a las personas en el fondo y que la(s) persona(s) en primer plano se mantengan sin desenfocar. La clave es que las personas en el fondo se mantengan estáticas para que se registren como fondo y que la(s) persona(s) en primer plano muestren algún movimiento. Sin embargo, los resultado son variables y no suficientemente consistentes para afirmar un funcionamiento óptimo.
+El resultado deseado es que el desenfoque solo afecte a las personas en el fondo y que la(s) persona(s) en primer plano se mantengan sin desenfocar. La clave es que las personas en el fondo se mantengan estáticas para que se registren como fondo y que la(s) persona(s) en primer plano muestren algún movimiento. Sin embargo, los resultados son variables y no suficientemente consistentes para afirmar un funcionamiento óptimo.
 
 <img alt="example4" src="/Ejemplos/example4.png">
 
